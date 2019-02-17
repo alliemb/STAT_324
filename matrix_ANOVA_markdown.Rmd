@@ -1,0 +1,67 @@
+---
+title: "matrix_ANOVA_markdown"
+name: Allie Blaising, STAT 324 
+output: html_document
+---
+# LINEAR REGRESSION ESTIMATES FROM MATRIX ALGEBRA USING R
+
+```{r}
+# Reading in X and Y variables: 
+expl.var <- c(16 , 16 , 16 , 16 , 24,  24,  24 , 24,  32 , 32 , 32 , 32 , 40 , 40,  40 , 40) 
+resp.var <- c(199, 205, 196, 200, 218, 220, 215, 223, 237, 234, 235, 230, 250,  248, 253,  246) 
+```
+
+# Setting up design matrix: 
+
+```{r}
+n <- length(resp.var)            # n = SAMPLE SIZE
+
+Y <- resp.var
+
+X <- cbind(1,expl.var)            # DESIGN MATRIX (FIRST COLUMN HAS ONLY ONES)
+                                # In a design matrix X has 1s in the first columns 
+                                # and the explanatory variables in the second                                      # column. Cbind combines a column of 1s w/ a column                                 equal to the # of rows of expl.var. The result is a                                 design matrix with rows of: [1 explanatory                                         variable] 
+
+p <- ncol(X)                     # p = NUMBER OF PARAMETERS ESTIMATED
+
+J <- matrix(1,nrow=n,ncol=n)     # (n x n) MATRIX OF ONES
+```
+
+# Performing initial matrix operations: 
+
+```{r}
+XTX <- t(X) %*% X                # X'X MATRIX
+
+XTX.INV <- solve(XTX)            # INVERSE OF X'X, this creates (X’X)-1
+```
+
+# Calculating ANOVA matrix outputs: 
+
+```{r}
+b <- XTX.INV %*% t(X) %*% Y      # ESTIMATED PARAMETERS
+
+SSTO <- t(Y) %*% Y - (1/n)*t(Y) %*% J %*% Y            # TOTAL SUM OF SQUARES
+SSE  <- t(Y) %*% Y - t(b) %*% t(X) %*% Y               # ALTERNATIVE DEF'N OF SSE
+SSR  <- t(b) %*% t(X) %*% Y - (1/n)*t(Y) %*% J %*% Y   # SSR = SSTO - SSE
+
+SSTO <- as.numeric(SSTO)         # as.numeric: NOT REQ'D BUT HELPFUL FOR PRINTING (SS Total in Minitab ANOVA output)
+SSR  <- as.numeric(SSR)          # as.numeric: NOT REQ'D BUT HELPFUL FOR PRINTING (SS Regression in Minitab ANOVA ouptut)
+SSE  <- as.numeric(SSE)          # as.numeric: NOT REQ'D BUT HELPFUL FOR PRINTING (SS Error from Minitab)
+
+MSR  <- SSR/(p-1)  # MS Regression column in Minitab Anova, found by dividing SSR by the # parameters - 1 
+MSE  <- SSE/(n-p) # Same as above, but dividing n by the number of parameters estimated 
+
+F.stat  <- MSR/MSE # F-stat in Minitab ANOVA output 
+p.value <- 1-pf(F.stat,p-1,n-p) # P-value to the right of the F-stat in the ANOVA 
+
+print(cbind(SSR, SSE, SSTO))
+
+print(cbind(MSR,MSE))
+
+print(cbind(F.stat,p.value))
+```
+
+
+
+
+
