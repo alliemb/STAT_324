@@ -1,0 +1,85 @@
+---
+title: "matrix_linreg_hw_6"
+name: Allie Blaising, STAT 324 
+output: html_document
+---
+# LINEAR REGRESSION ESTIMATES FROM MATRIX ALGEBRA USING R
+
+```{r}
+# Reading in variables: 
+resp.var <- c(314.9	, 359	, 300.7, 	271.3	, 266.9	, 240.2	, 231.3, 	315.8	, 338.1	, 355.9, 378.1,	102	, 110.8	,103.2	 ,101.9, 	120.5, 	111.6,	219.3	, 213.1) 
+expl.var1 <- c(469,	469,	469,	400,	400	, 400,	400, 	400	, 400	, 400, 400,	46,	46,	365	,365,	365	,365,	392	,392) 
+expl.var2 <- c(21.1	, 21.1,	20.9,	25.6,	25.6,	33.1,	33.1,	25.7,	27.6	,27.6, 25.7	, 4.65,	4.34,	23	, 20.2,	23	,20.2	,30.7	, 30.7) 
+```
+
+# Setting up design matrix: 
+
+```{r}
+n <- length(resp.var)           # n = SAMPLE SIZE. Use length function to return #                                 of variables in vector/list resp.var 
+
+Y <- resp.var   # Renaming resp.var so it's consistent with traditional        
+                # representation of response variable: Y. 
+
+X <- cbind(1,expl.var1, expl.var2)          # DESIGN MATRIX (FIRST COLUMN HAS ONLY ONES)
+                                # In a design matrix X has 1s in the first columns 
+                                # and the explanatory variables in the second                                      # column. Cbind combines a column of 1s w/ a column                                 equal to the # of rows of expl.var. The result is a                                 design matrix with rows of: [1 explanatory                                         variable] 
+
+dimnames(X) <- list(NULL,NULL)  # dimnames: NOT REQ'D BUT HELPFUL FOR PRINTING
+print(t(X))
+p <- ncol(X)                    # p = NUMBER OF PARAMETERS ESTIMATED
+```
+
+# Performing initial matrix operations: 
+
+```{r}
+XTX <- t(X) %*% X               # X'X MATRIX: t(X)=X' (this transposes X)  
+                                # %*%=MATRIX MULTIPLICATION
+print(XTX)
+
+XTX.INV <- solve(XTX)           # INVERSE OF X'X
+
+print(XTX %*% XTX.INV)          # THIS SHOULD YIELD IDENTITY MATRIX
+```
+
+# Calculating matrix outputs: 
+
+```{r}
+b <- XTX.INV %*% t(X) %*% Y     # ESTIMATED PARAMETERS, created by fist multiplying the inverse vector ofx by the transposed x, and then multiplying by vector of Y. 
+print(b)
+
+H <- X %*% XTX.INV %*% t(X)     # HAT MATRIX, created by multiplying X 
+
+Y.hat <- H %*% Y                # FITTED VALUES, created by multiplying HAT MATRIX by vector Y 
+print(t(Y.hat))
+
+RESID <- Y - Y.hat              # RESIDUAL VALUES, created by subtracting predicted Y values from expected 
+print(t(RESID))
+
+SSE <- t(RESID) %*% RESID       # SUM OF SQUARED ERRORS, SSE found by taking the transpose of the residual vectors and multiplying by the residual vectors 
+print(SSE)
+
+MSE <- as.numeric(SSE/(n-p))    # MEAN SQUARE ERROR: as.numeric MAKES MSE A SCALAR,
+                                # NEEDED FOR VAR.COV BELOW
+                    
+print(MSE)
+
+RMSE <- sqrt(MSE)     
+print(RMSE)
+
+VAR.COV <- MSE*(XTX.INV)        # VAR/COVAR MATRIX, created by multiplying MSE by the inverse of X'X 
+print(VAR.COV)
+
+se.b0 <- sqrt(VAR.COV[1,1])     # STANDARD ERROR b_0: Use row=1, col=1 of VAR.COV
+se.b1 <- sqrt(VAR.COV[2,2])     # STANDARD ERROR b_1: Use row=2, col=2 of VAR.COV
+se.b2 <- sqrt(VAR.COV[3,3])  # Adding B2 standard error 
+
+print(cbind(se.b0, se.b1, se.b2))
+
+# Checked Minitab output to confirm 
+
+```
+
+
+
+
+
